@@ -1,4 +1,4 @@
-function getBestMove(M,player,score,moves)
+function getBestMove(M,player,score,moves,movePossible,makeMove!,gameOver)
     # uses minimax algorithm to find best move
 
     # initialise algorithm values
@@ -11,7 +11,7 @@ function getBestMove(M,player,score,moves)
         if movePossible(M,i)
             N = deepcopy(M)
             N = makeMove!(N,i,player) # play the move
-            moveVal, depth = minimax(N,0,false,3-player,moves,score) # evaluate it
+            moveVal, depth = minimax(N,0,false,3-player,moves,score,movePossible,makeMove!,gameOver) # evaluate it
 
             print("$i: $moveVal $depth\n")
             # if the move is better than the current best, keep it
@@ -28,7 +28,7 @@ function getBestMove(M,player,score,moves)
     return bestMove # we are left with one of the optimal moves
 end
 
-function minimax(M,depth,isMax,player,moves,score)
+function minimax(M,depth,isMax,player,moves,score,movePossible,makeMove!,gameOver)
     # minimax step
     depthOut = depth
     if gameOver(M)
@@ -41,7 +41,7 @@ function minimax(M,depth,isMax,player,moves,score)
                 N = makeMove!(N,i,player) # play the move
 
                 # pass on to the minimiser
-                value, depthOut = minimax(N,depth+1,!isMax,3-player,moves,score)
+                value, depthOut = minimax(N,depth+1,!isMax,3-player,moves,score,movePossible,makeMove!,gameOver)
 
                 # did this move do better?
                 best = isMax ? max(best, value) : min(best, value)

@@ -1,3 +1,14 @@
-using SafeTestsets
+# using SafeTestsets
+using MinimaxAI
+using Test
+# MinimaxAI.playBones(ai = 2,N=20)
 
-@safetestset "Generic tests" begin include("minimax_tests.jl") end
+
+@testset "Seeing if it works" begin
+    @test playBones(N = 1, ai =2) == nothing
+    @test playBones(N = 25, ai = 2) == nothing
+    @test playTicTacToe(ai = 2) == nothing
+    @test playTicTacToe(ai = 2) == nothing
+end
+
+# @safetestset "Generic tests" begin include("minimax_tests.jl") end
