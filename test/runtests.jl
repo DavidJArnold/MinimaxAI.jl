@@ -1,6 +1,3 @@
-using MinimaxAI
-using Test
+using SafeTestsets
 
-@testset "MinimaxAI.jl" begin
-    # Write your tests here.
-end
+@safetestset "TicTacToe tests" begin include("ttt_tests.jl") end
