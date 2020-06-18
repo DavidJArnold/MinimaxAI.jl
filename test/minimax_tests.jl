@@ -1,6 +1,8 @@
 using MinimaxAI
 using Test
 
+# playBones()
+
 MinimaxAI.play()
 
 # @testset "MinimaxAI.jl" begin

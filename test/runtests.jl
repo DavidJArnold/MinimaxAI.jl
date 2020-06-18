@@ -1,3 +1,3 @@
 using SafeTestsets
 
-@safetestset "TicTacToe tests" begin include("ttt_tests.jl") end
+@safetestset "Generic tests" begin include("minimax_tests.jl") end
