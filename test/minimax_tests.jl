@@ -3,7 +3,10 @@ using Test
 
 # playBones()
 
-MinimaxAI.play()
+playBones()
+
+
+MinimaxAI.playConnect4()
 
 # @testset "MinimaxAI.jl" begin
 #     @test my_f(2,2) == 10
