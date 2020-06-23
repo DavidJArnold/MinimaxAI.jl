@@ -8,7 +8,7 @@ using Test
     @test playBones(N = 1, ai =2) == nothing
     @test playBones(N = 25, ai = 2) == nothing
     @test playTicTacToe(ai = 2) == nothing
-    @test playConnect4(ai = 2) == nothing
+    @test playConnect4(ai = 2, method = "minimaxAB", abDepth = 3) == nothing
     @test playBones(N = 25, ai = 2, method = "minimaxAB", abDepth = 3) == nothing
     @test playTicTacToe(ai = 2 , method = "minimaxAB", abDepth = 5) == nothing
 end
