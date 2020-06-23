@@ -10,11 +10,8 @@ Implements a few simple games in Julia and has a generic AI opponent for them.
 Games
  * Tic Tac Toe
  * Game of bones (trying to avoid picking up the last bone in piles)
+ * Connect 4 (needs AB pruning or else the search space is too large)
 
 ## Structure
 
-Each game is implemented in its own module, with it's own tests.
-
-The AI is implemented in its own module, which takes in a list of candidate moves and a scoring function.
-
-Hopefully.
+The AI is implemented in its own module, which takes in a list of candidate moves and a scoring function. There are two variants, one which does AB pruning, the depth can be limited.
