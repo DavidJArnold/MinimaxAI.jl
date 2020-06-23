@@ -1,4 +1,4 @@
-function playBones(;ai::Int=1,N=rand(5:10))
+function playBones(;ai::Int=1,N=rand(5:10),method::String="minimax",abDepth::Int=4)
     # initialise board and display
     M = bones_initialise(N)
     bones_boardDisplay(M)
@@ -20,7 +20,7 @@ function playBones(;ai::Int=1,N=rand(5:10))
 
         # take a turn, either by human or AI
         if isAI[player]
-            M = bones_aiTurn!(M,player)
+            M = bones_aiTurn!(M,player,method,abDepth)
         else
             M = bones_takeTurn!(M,player)
         end
@@ -68,10 +68,18 @@ function bones_getMove(M)
     end
 end
 
-function bones_aiTurn!(M,player)
+function bones_aiTurn!(M,player,method,abDepth)
     # work out the best move and then plays it
     moves = [1:3;]
-    x = getBestMove(M,player,bones_score,moves,bones_movePossible,bones_makeMove!,bones_gameOver)
+
+    if isequal(method,"minimaxAB")
+        x = getBestMoveAB(M,player,bones_score,moves,bones_movePossible,
+            bones_makeMove!,bones_gameOver,abDepth)
+    else
+        x = getBestMove(M,player,bones_score,moves,bones_movePossible,
+            bones_makeMove!,bones_gameOver)
+    end
+    
     return bones_makeMove!(M,x,player)
 end
 

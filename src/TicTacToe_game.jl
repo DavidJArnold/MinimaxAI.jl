@@ -2,7 +2,7 @@
 # 0 -> empty space, 1 -> O, 2 -> X
 str = [' ', 'O', 'X']
 
-function playTicTacToe(;ai::Int=1)
+function playTicTacToe(;ai::Int=1,method::String="minimax",abDepth::Int=4)
     # initialise board and display
     M = ttt_initialise()
     ttt_boardDisplay(M)
@@ -22,7 +22,7 @@ function playTicTacToe(;ai::Int=1)
     while true # take turns until the game ends
         # take a turn, either by human or AI
         if isAI[player]
-            M = ttt_aiTurn!(M,player)
+            M = ttt_aiTurn!(M,player,method,abDepth)
         else
             M = ttt_takeTurn!(M,player)
         end
@@ -54,6 +54,7 @@ function ttt_boardDisplay(M)
     r3 = "      ___|___|___\n"
     print("Column 1   2   3\n",r1,r2(1),r3,
         r1,r2(2),r3,r1,r2(3),r1)
+        print("Board eval: $(ttt_scoreHelper(M,1))\n")
 end
 
 function ttt_takeTurn!(M,player)
@@ -77,20 +78,43 @@ function ttt_getMove(M)
     end
 end
 
-function ttt_aiTurn!(M,player)
+function ttt_aiTurn!(M,player,method,abDepth)
     # work out the best move and then plays it
     moves = 1:9
-    idx = getBestMove(M,player,ttt_score,moves,ttt_movePossible,ttt_makeMove!,ttt_gameOver)
+    if isequal(method,"minimaxAB")
+        idx = getBestMoveAB(M,player,ttt_score,moves,ttt_movePossible,ttt_makeMove!,ttt_gameOver,abDepth)
+    else
+        idx = getBestMove(M,player,ttt_score,moves,ttt_movePossible,ttt_makeMove!,ttt_gameOver)
+    end
     M[idx] = player
     return M
 end
 
 function ttt_score(M,player)
     win = ttt_checkWinner(M)
-    return win==0 ? 0 : (win==player ? 1 : -1)
+    if win!=0
+        return win==player ? 100 : -100
+    elseif ttt_gameOver(M)
+        return 0
+    else
+        return ttt_scoreHelper(M,player)
+    end
 
     # returns 0 if the game isn't over, 1 if the player wins,
     # -1 if the player loses
+end
+
+function ttt_scoreHelper(M,player)
+    # See who has won the game
+
+    # p1  and p2 are boolean arrays indicating where each player has played
+    p = M.==player
+    o = M.==3-player
+
+    s = sum(filter(x -> x>=2 || x<=-2,
+        [sum(p-o,dims=1) sum(p-o,dims=2)' sum(p[1:4:9]-o[1:4:9]) sum(p[3:2:7]-o[3:2:7])]))
+
+    return s
 end
 
 function ttt_checkWinner(M)

@@ -2,7 +2,7 @@
 # 0 -> empty space, 1 -> O, 2 -> X
 str = [' ', 'O', 'X']
 
-function playConnect4(;ai::Int=1)
+function playConnect4(;ai::Int=1,method::String="minimaxAB",abDepth::Int=6)
     # initialise board and display
     M = c4_initialise()
     c4_boardDisplay(M)
@@ -22,7 +22,7 @@ function playConnect4(;ai::Int=1)
     while true # take turns until the game ends
         # take a turn, either by human or AI
         if isAI[player]
-            M = c4_aiTurn!(M,player)
+            M = c4_aiTurn!(M,player,method,abDepth)
         else
             M = c4_takeTurn!(M,player)
         end
@@ -57,16 +57,19 @@ function c4_boardDisplay(M)
         end
         print("\n")
     end
-    # print("_______________\n")
+
+    print("---------------\n")
+    print("Board eval: $(c4_scoreHelper(M,1))\n")
     print("---------------\n")
 end
 
 function c4_takeTurn!(M,player)
     # asks for player input and updates the game state
     col = c4_getMove(M)
-    ids = count(!iszero,M[:,col])
-    M[6-ids,col] = player
-    return M
+    # ids = count(!iszero,M[:,col])
+    # M[6-ids,col] = player
+
+    return c4_makeMove!(M,col,player)
 end
 
 function c4_getMove(M)
@@ -83,17 +86,33 @@ function c4_getMove(M)
     end
 end
 
-function c4_aiTurn!(M,player)
+function c4_aiTurn!(M,player,method,abDepth)
     # work out the best move and then plays it
     moves = 1:7
-    idx = getBestMove(M,player,c4_score,moves,c4_movePossible,c4_makeMove!,c4_gameOver)
-    M[idx] = player
-    return M
+
+    if isequal(method,"minimaxAB")
+        col = getBestMoveAB(M,player,c4_score,moves,
+            c4_movePossible,c4_makeMove!,c4_gameOver,abDepth)
+    else
+        col = getBestMove(M,player,c4_score,moves,
+            c4_movePossible,c4_makeMove!,c4_gameOver);
+    end
+
+    # ids = count(!iszero,M[:,col])
+    # M[6-ids,col] = player
+    return c4_makeMove!(M,col,player)
 end
+
 
 function c4_score(M,player)
     win = c4_checkWinner(M)
-    return win==0 ? 0 : (win==player ? 1 : -1)
+    if win!=0
+        return win==player ? 100 : -100
+    elseif c4_gameOver(M)
+        return 0
+    else
+        return c4_scoreHelper(M,player)
+    end
 
     # returns 0 if the game isn't over, 1 if the player wins,
     # -1 if the player loses
@@ -107,7 +126,7 @@ function c4_checkWinner(M)
         rows = 1:6
         cols = 1:4
         for row in rows, col in cols
-            if all(M[row,col:col+3]==player)
+            if all(M[row,col:col+3].==player)
                 return player
             end
         end
@@ -116,7 +135,7 @@ function c4_checkWinner(M)
         rows = 1:3
         cols = 1:7
         for row in rows, col in cols
-            if all(M[row:row+3,col]==player)
+            if all(M[row:row+3,col].==player)
                 return player
             end
         end
@@ -126,15 +145,64 @@ function c4_checkWinner(M)
         cols = 1:4
         for row in rows, col in cols
             temp = M[row:row+3,col:col+3]
-            if all(temp[4:3:13]==player)
+            if all(temp[4:3:13].==player)
                 return player
             end
-            if all(temp[1:5:16]==player)
+            if all(temp[1:5:16].==player)
                 return player
             end
         end
     end
     return 0
+end
+
+function c4_scoreHelper(M,player)
+    # See who has won the game
+    S = [0 0]
+
+    for player in (1,2)
+        scr = 0
+        # horizontal lines
+        rows = 1:6
+        cols = 1:4
+        for row in rows, col in cols
+            if count(!iszero,M[row,col:col+3].==player)>3 && count(!iszero,M[row,col:col+3].==3-player)==0
+                scr += 4
+            elseif count(!iszero,M[row,col:col+3].==player)>2 && count(!iszero,M[row,col:col+3].==3-player)==0
+                scr += 1
+            end
+        end
+
+        # vertical lines
+        rows = 1:3
+        cols = 1:7
+        for row in rows, col in cols
+            if count(!iszero,M[row:row+3,col].==player)>3 && count(!iszero,M[row:row+3,col].==3-player)==0
+                scr += 4
+            elseif count(!iszero,M[row:row+3,col].==player)>2 && count(!iszero,M[row:row+3,col].==3-player)==0
+                scr += 1
+            end
+        end
+
+        # diagonals /
+        rows = 1:3
+        cols = 1:4
+        for row in rows, col in cols
+            temp = M[row:row+3,col:col+3]
+            if count(!iszero,temp[4:3:13].==player)>3 && count(!iszero,temp[4:3:13].==3-player)==0
+                scr += 4
+            elseif count(!iszero,temp[4:3:13].==player)>2 && count(!iszero,temp[4:3:13].==3-player)==0
+                scr += 1
+            end
+            if count(!iszero,temp[1:5:16].==player)>3 && count(!iszero,temp[1:5:16].==3-player)==0
+                scr += 4
+            elseif count(!iszero,temp[1:5:16].==player)>2 && count(!iszero,temp[1:5:16].==3-player)==0
+                scr += 1
+            end
+        end
+        S[player] = scr
+    end
+    return S[player]-S[3-player]
 end
 
 function c4_makeMove!(N,i,player)
